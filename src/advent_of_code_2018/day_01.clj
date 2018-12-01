@@ -14,13 +14,13 @@
   [changes]
   (apply + changes))
 
-(defn first-two-frequency-occurence
+(defn first-two-frequency-occurrence
   {:test (fn []
-           (is (= (first-two-frequency-occurence [1 -2 3 1]) 2))
-           (is (= (first-two-frequency-occurence [3 3 4 -2 -4]) 10))
-           (is (= (first-two-frequency-occurence [-6 3 8 5 -6]) 5))
-           (is (= (first-two-frequency-occurence [7 7 -2 -7 -4]) 14))
-           (is (= (first-two-frequency-occurence (clean-input input)) 80598)) ; part 2
+           (is (= (first-two-frequency-occurrence [1 -2 3 1]) 2))
+           (is (= (first-two-frequency-occurrence [3 3 4 -2 -4]) 10))
+           (is (= (first-two-frequency-occurrence [-6 3 8 5 -6]) 5))
+           (is (= (first-two-frequency-occurrence [7 7 -2 -7 -4]) 14))
+           (is (= (first-two-frequency-occurrence (clean-input input)) 80598)) ; part 2
            )}
   [changes]
   (loop
