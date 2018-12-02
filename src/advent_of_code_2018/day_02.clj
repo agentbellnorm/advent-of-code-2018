@@ -59,20 +59,20 @@
 
 (defn ordered-shared-letters
   {:test (fn []
-           (is (= (ordered-shared-letters "abc" "abc") (vec "abc")))
-           (is (= (ordered-shared-letters "fghij" "fguij") (vec "fgij"))))}
+           (is (= (ordered-shared-letters "abc" "abc") "abc"))
+           (is (= (ordered-shared-letters "fghij" "fguij") "fgij")))}
   [s1 s2]
   (reduce (fn [result index]
             (if (= (nth s1 index) (nth s2 index))
-              (conj result (nth s1 index))
+              (str result (nth s1 index))
               result))
-          []
+          ""
           (range (count s1))))
 
 (defn common-letters
   {:test (fn []
-           (is (= (common-letters (read-input-as-strings test-input2)) (vec "fgij")))
-           (is (= (common-letters (read-input-as-strings input)) (vec "qcslyvphgkrmdawljuefotxbh"))))} ; part 2
+           (is (= (common-letters (read-input-as-strings test-input2)) "fgij"))
+           (is (= (common-letters (read-input-as-strings input)) "qcslyvphgkrmdawljuefotxbh")))} ; part 2
   [box-ids]
   (loop [[current-id & ids] box-ids]
     (let [distances (zipmap (map (fn [id] (distance id current-id)) ids) ids)]
