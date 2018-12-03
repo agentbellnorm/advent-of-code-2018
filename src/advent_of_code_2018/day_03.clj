@@ -67,13 +67,14 @@
 (defn claim-to-cut
   {:test (fn []
            (is (= (claim-to-cut "#44 @ 180,783: 11x24")
-                  {:x 180 :y 783 :width 11 :height 24}))
+                  {:x 180 :y 783 :width 11 :height 24 :id 44}))
            )}
   [claim]
   {:x      (read-string (last (re-find #"\@\s(.*)," claim)))
    :y      (read-string (last (re-find #",(.*):" claim)))
    :width  (read-string (last (re-find #":\s(.*)x" claim)))
    :height (read-string (last (re-find #"x(.*)$" claim)))
+   :id     (read-string (last (re-find #"#(.*)\s@" claim)))
    })
 
 (defn squares-with-two-or-more-claims
@@ -85,7 +86,7 @@
            (is (= (squares-with-two-or-more-claims (->> input
                                                         (read-input-as-strings)
                                                         (map #(claim-to-cut %))))
-                  109716)) ; first
+                  109716))                                  ; first
            )}
   [claims]
   (let [initial-fabric (fabric 1500 1500)
@@ -96,7 +97,41 @@
                           (filter #(> % 1))
                           (count)))) 0 cut-fabric)))
 
+(defn single-cross-cut?
+  {:test (fn []
+           (is (single-cross-cut? [[0 0 0]
+                                   [0 1 1]
+                                   [0 1 1]] (get-cut-map 1 1 2 2)))
+           (is (not (single-cross-cut? [[0 0 0]
+                                        [1 1 0]
+                                        [1 1 0]] (get-cut-map 1 1 2 2))
+                    ))
+           (is (not (single-cross-cut? [[0 0 0]
+                                        [0 1 1]
+                                        [0 1 2]] (get-cut-map 1 1 2 2))
+                    ))
+           )}
+  [fabric cut-info]
+  (let [rows (subvec fabric (:y cut-info) (+ (:y cut-info) (:height cut-info)))]
+    (every? true? (map (fn [row]
+                         (= (vec (replicate (:width cut-info) 1))
+                            (subvec row (:x cut-info) (+ (:x cut-info) (:width cut-info)))
+                            )) rows))))
 
-(squares-with-two-or-more-claims (->> input
-                                      (read-input-as-strings)
-                                      (map #(claim-to-cut %))))
+(defn lone-claim
+  {:test (fn []
+           (is (= (lone-claim (->> test-input
+                                   read-input-as-strings
+                                   (map #(claim-to-cut %)))) 3))
+           (is (= (lone-claim (->> input
+                                   read-input-as-strings
+                                   (map #(claim-to-cut %)))) 124)))} ; second
+  [claims]
+  (let [cut-fabric (vec (reduce (fn [fabric claim-cut]
+                                  (cut fabric claim-cut)) (fabric 1500 1500) claims))]
+    (->> claims
+         (map (fn [claim]
+                (if (single-cross-cut? cut-fabric claim)
+                  (:id claim))))
+         (filter #(not (nil? %)))
+         (first))))
