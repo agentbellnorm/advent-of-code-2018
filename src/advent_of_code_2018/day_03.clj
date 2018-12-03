@@ -17,8 +17,7 @@
 (defn cut-square
   {:test (fn []
            (is (= (cut-square [0 0 0] 1) [0 1 0]))
-           (is (= (cut-square [0 0 1] 2) [0 0 2]))
-           )}
+           (is (= (cut-square [0 0 1] 2) [0 0 2])))}
   [row col]
   (assoc row col (inc (nth row col))))
 
@@ -67,15 +66,13 @@
 (defn claim-to-cut
   {:test (fn []
            (is (= (claim-to-cut "#44 @ 180,783: 11x24")
-                  {:x 180 :y 783 :width 11 :height 24 :id 44}))
-           )}
+                  {:x 180 :y 783 :width 11 :height 24 :id 44})))}
   [claim]
   {:x      (read-string (last (re-find #"\@\s(.*)," claim)))
    :y      (read-string (last (re-find #",(.*):" claim)))
    :width  (read-string (last (re-find #":\s(.*)x" claim)))
    :height (read-string (last (re-find #"x(.*)$" claim)))
-   :id     (read-string (last (re-find #"#(.*)\s@" claim)))
-   })
+   :id     (read-string (last (re-find #"#(.*)\s@" claim)))})
 
 (defn squares-with-two-or-more-claims
   {:test (fn []
@@ -86,8 +83,7 @@
            (is (= (squares-with-two-or-more-claims (->> input
                                                         (read-input-as-strings)
                                                         (map #(claim-to-cut %))))
-                  109716))                                  ; first
-           )}
+                  109716)))}                                ; first
   [claims]
   (let [initial-fabric (fabric 1500 1500)
         cut-fabric (reduce (fn [fabric claim-cut]
@@ -100,17 +96,14 @@
 (defn cut-only-once?
   {:test (fn []
            (is (cut-only-once? [[0 0 0]
-                                   [0 1 1]
-                                   [0 1 1]] (get-cut-map 1 1 2 2)))
+                                [0 1 1]
+                                [0 1 1]] (get-cut-map 1 1 2 2)))
            (is (not (cut-only-once? [[0 0 0]
-                                        [1 1 0]
-                                        [1 1 0]] (get-cut-map 1 1 2 2))
-                    ))
+                                     [1 1 0]
+                                     [1 1 0]] (get-cut-map 1 1 2 2))))
            (is (not (cut-only-once? [[0 0 0]
-                                        [0 1 1]
-                                        [0 1 2]] (get-cut-map 1 1 2 2))
-                    ))
-           )}
+                                     [0 1 1]
+                                     [0 1 2]] (get-cut-map 1 1 2 2)))))}
   [fabric cut-info]
   (let [rows (subvec fabric (:y cut-info) (+ (:y cut-info) (:height cut-info)))]
     (every? true? (map (fn [row]
