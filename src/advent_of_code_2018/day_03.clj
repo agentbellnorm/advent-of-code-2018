@@ -97,16 +97,16 @@
                           (filter #(> % 1))
                           (count)))) 0 cut-fabric)))
 
-(defn single-cross-cut?
+(defn cut-only-once?
   {:test (fn []
-           (is (single-cross-cut? [[0 0 0]
+           (is (cut-only-once? [[0 0 0]
                                    [0 1 1]
                                    [0 1 1]] (get-cut-map 1 1 2 2)))
-           (is (not (single-cross-cut? [[0 0 0]
+           (is (not (cut-only-once? [[0 0 0]
                                         [1 1 0]
                                         [1 1 0]] (get-cut-map 1 1 2 2))
                     ))
-           (is (not (single-cross-cut? [[0 0 0]
+           (is (not (cut-only-once? [[0 0 0]
                                         [0 1 1]
                                         [0 1 2]] (get-cut-map 1 1 2 2))
                     ))
@@ -131,7 +131,7 @@
                                   (cut fabric claim-cut)) (fabric 1500 1500) claims))]
     (->> claims
          (map (fn [claim]
-                (if (single-cross-cut? cut-fabric claim)
+                (if (cut-only-once? cut-fabric claim)
                   (:id claim))))
          (filter #(not (nil? %)))
          (first))))
