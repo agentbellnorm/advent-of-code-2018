@@ -10,18 +10,16 @@
 
 (defn minute-delta
   {:test (fn []
-           (is (= (minute-delta "[1518-11-01 00:05] falls asleep" "[1518-11-01 00:25] wakes up") 20))
-           )}
+           (is (= (minute-delta "[1518-11-01 00:05] falls asleep" "[1518-11-01 00:25] wakes up") 20)))}
   [t1 t2]
   (let [min1 (Integer/parseInt (last (re-find #"\d{2}:(.*)\]" t1)))
         min2 (Integer/parseInt (last (re-find #"\d{2}:(.*)\]" t2)))]
     (- min2 min1)))
 
-(defn minut-range
+(defn minute-range
   {:test (fn []
-           (is (= (minut-range "[1518-11-01 00:05] falls asleep" "[1518-11-01 00:25] wakes up")
-                  [5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24])))
-           }
+           (is (= (minute-range "[1518-11-01 00:05] falls asleep" "[1518-11-01 00:25] wakes up")
+                  [5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24])))}
   [t1 t2]
   (let [min1 (Integer/parseInt (last (re-find #"\d{2}:(.*)\]" t1)))
         min2 (Integer/parseInt (last (re-find #"\d{2}:(.*)\]" t2)))]
@@ -36,7 +34,7 @@
        sort
        (reduce (fn [shifts line]
                  (if (includes? line "begins shift")
-                   (conj shifts {:id (read-string (last (re-find #"Guard\s#(.*) be" line)))
+                   (conj shifts {:id     (read-string (last (re-find #"Guard\s#(.*) be" line)))
                                  :events []})
                    (let [current-shift (last shifts)
                          shifts-but-last (vec (butlast shifts))]
@@ -46,7 +44,9 @@
        (reduce (fn [guards shift]
                  (update guards (:id shift) (fn [guard]
                                               (update guard :events (fn [events]
-                                                                      (concat events (:events shift))))))) {})))
+                                                                      (concat events (:events shift))))))) {})
+       (filter (fn [[_ events]] (not (empty? (:events events)))))
+       (into {})))
 
 (defn longest-sleep
   {:test (fn []
@@ -64,24 +64,47 @@
 
 (defn most-slept-minute
   {:test (fn []
-           (is (= (most-slept-minute (:events (get (guard-events test-input) 10)))
-                  24)))}
+           (is (= (most-slept-minute (:events (get (guard-events test-input) 10))) 24)))}
   [events]
   (->> events
        (partition 2)
        (map (fn [event-pair]
-              (minut-range (first event-pair) (last event-pair))))
+              (minute-range (first event-pair) (last event-pair))))
        (map frequencies)
        (apply merge-with +)
        (apply max-key val)
        key))
 
-(defn id-by-minute
+(defn id-by-minute-longest-sleep
   {:test (fn []
-           (is (= (id-by-minute test-input) 240))
-           (is (= (id-by-minute input) 142515)))}           ; part 1
+           (is (= (id-by-minute-longest-sleep test-input) 240))
+           (is (= (id-by-minute-longest-sleep input) 142515)))} ; part 1
   [log]
   (let [longest-sleeper (:id (longest-sleep (guard-events log)))
         guard-events (:events (get (guard-events log) longest-sleeper))
         most-slept-minute (most-slept-minute guard-events)]
     (* longest-sleeper most-slept-minute)))
+
+(defn id-by-minute-most-frequent-minute
+  {:test (fn []
+           (is (= (id-by-minute-most-frequent-minute (guard-events test-input)) 4455))
+           (is (= (id-by-minute-most-frequent-minute (guard-events input)) 5370)))} ; second
+  [events]
+  (as-> events $
+       (map (fn [[id events]]
+              (print id)
+              (print events)
+              {:id        id
+               :most-freq (->> events
+                               (:events)
+                               (partition 2)
+                               (map (fn [event-pair]
+                                      (minute-range (first event-pair) (last event-pair))))
+                               (map frequencies)
+                               (apply merge-with +)
+                               (printreturn)
+                               (apply max-key val)
+                               )}) $)
+       (apply max-key (fn [guard] (second (:most-freq guard))) $)
+       (* (:id $) (first (:most-freq $)))))
+
