@@ -56,8 +56,8 @@
        (map (fn [[id events]]
               (let [event-list (:events events)]
                 {:id    id
-                 :sleep (apply + (map (fn [event-pair]
-                                        (minute-delta (first event-pair) (last event-pair))) (partition 2 event-list)))})))
+                 :sleep (apply + (map (fn [[e1 e2]]
+                                        (minute-delta e1 e2)) (partition 2 event-list)))})))
 
        (sort-by :sleep)
        (last)))
@@ -68,8 +68,8 @@
   [events]
   (->> events
        (partition 2)
-       (map (fn [event-pair]
-              (minute-range (first event-pair) (last event-pair))))
+       (map (fn [[e1 e2]]
+              (minute-range e1 e2)))
        (map frequencies)
        (apply merge-with +)
        (apply max-key val)
@@ -92,17 +92,14 @@
   [events]
   (as-> events $
        (map (fn [[id events]]
-              (print id)
-              (print events)
               {:id        id
                :most-freq (->> events
                                (:events)
                                (partition 2)
-                               (map (fn [event-pair]
-                                      (minute-range (first event-pair) (last event-pair))))
+                               (map (fn [[e1 e2]]
+                                      (minute-range e1 e2)))
                                (map frequencies)
                                (apply merge-with +)
-                               (printreturn)
                                (apply max-key val)
                                )}) $)
        (apply max-key (fn [guard] (second (:most-freq guard))) $)
