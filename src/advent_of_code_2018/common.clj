@@ -27,3 +27,20 @@
   [x]
   (println x)
   x)
+
+;; From e.g. https://github.com/scottjad/uteal
+(defmacro dlet
+  "let with inspected bindings"
+  [bindings & body]
+  `(let [~@(mapcat (fn [[n v]]
+                     (if (or (vector? n) (map? n))
+                       [n v]
+                       [n v '_ `(println (name '~n) ":" ~v)]))
+                   (partition 2 bindings))]
+     ~@body))
+
+(defn regex-to-int
+  {:test (fn []
+           (is (regex-to-int "[1518-11-01 00:05] falls asleep"  #"\d{2}:(.*)\]") 5))}
+  [str pat]
+  (Integer/parseInt (last (re-find pat str))))
