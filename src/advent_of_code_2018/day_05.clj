@@ -56,7 +56,7 @@
            (comment (is (= (remove-most-blocking-and-destroy input) 6650))))} ; part 2
   [polymer]
   (->> (char-range \a \z)
-       (map (fn [char]
+       (pmap (fn [char]
               (-> polymer
                   (cut (upper-case (str char)))
                   (cut (lower-case (str char)))
