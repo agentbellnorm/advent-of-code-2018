@@ -42,7 +42,7 @@
   {:test (fn []
            (is (= (destroy-all test-input) "dabCBAcaDA"))
            (is (= (count (destroy-all test-input)) 10))
-           (is (= (count (destroy-all input)) 10804)))}      ; part 1
+           (is (= (count (destroy-all input)) 10804)))}     ; part 1
   [polymer]
   (loop [current-polymer polymer
          prev-polymer (destroy-once polymer)]
@@ -55,12 +55,12 @@
            (is (= (remove-most-blocking-and-destroy test-input) 4))
            (comment (is (= (remove-most-blocking-and-destroy input) 6650))))} ; part 2
   [polymer]
-  (->> (char-range \a \z)
-       (pmap (fn [char]
-              (-> polymer
-                  (cut (upper-case (str char)))
-                  (cut (lower-case (str char)))
-                  (destroy-all)
-                  (count))))
-       (apply min)))
-
+  (let [reduced-polymer (destroy-all polymer)]
+    (->> (char-range \a \z)
+         (pmap (fn [char]
+                 (-> reduced-polymer
+                     (cut (upper-case (str char)))
+                     (cut (lower-case (str char)))
+                     (destroy-all)
+                     (count))))
+         (apply min))))
