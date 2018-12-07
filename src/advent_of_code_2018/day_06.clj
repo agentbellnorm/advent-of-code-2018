@@ -38,6 +38,15 @@
       ["-1"]
       closest)))
 
+(defn distance-to-others
+  {:test (fn []
+           (is (= (distance-to-others test-input [4 3]) 30)))}
+  [places [p1 p2]]
+  (let [distances (reduce (fn [acc [place [q1 q2]]]
+                            (let [distance (+ (abs (- p1 q1)) (abs (- p2 q2)))]
+                              (assoc acc place distance))) {} places)]
+    (apply + (vals distances))))
+
 (defn bounding-box
   {:test (fn []
            (is (= (bounding-box test-input) [1 1 9 10])))}
@@ -50,65 +59,65 @@
 
 (defn init-space
   {:test (fn []
-           (is (= (init-space test-input) [[["0" 0] ["0" 1] ["0" 2] ["0" 3] ["-1"] ["2" 4] ["2" 3] ["2" 2]]
-                                           [["0" 1] ["0" 2] ["3" 2] ["3" 3] ["4" 3] ["2" 3] ["2" 2] ["2" 1]]
-                                           [["0" 2] ["3" 2] ["3" 1] ["3" 2] ["4" 2] ["2" 2] ["2" 1] ["2" 0]]
-                                           [["-1"] ["3" 1] ["3" 0] ["3" 1] ["4" 1] ["4" 2] ["2" 2] ["2" 1]]
-                                           [["1" 1] ["-1"] ["3" 1] ["4" 1] ["4" 0] ["4" 1] ["4" 2] ["2" 2]]
-                                           [["1" 0] ["1" 1] ["-1"] ["4" 2] ["4" 1] ["4" 2] ["4" 3] ["-1"]]
-                                           [["1" 1] ["1" 2] ["-1"] ["4" 3] ["4" 2] ["4" 3] ["5" 3] ["5" 2]]
-                                           [["1" 2] ["1" 3] ["-1"] ["4" 4] ["4" 3] ["5" 3] ["5" 2] ["5" 1]]
-                                           [["1" 3] ["1" 4] ["-1"] ["5" 4] ["5" 3] ["5" 2] ["5" 1] ["5" 0]]])))}
-  [coords]
+           (is (= (init-space test-input closest) [[["0" 0] ["0" 1] ["0" 2] ["0" 3] ["-1"] ["2" 4] ["2" 3] ["2" 2]]
+                                                   [["0" 1] ["0" 2] ["3" 2] ["3" 3] ["4" 3] ["2" 3] ["2" 2] ["2" 1]]
+                                                   [["0" 2] ["3" 2] ["3" 1] ["3" 2] ["4" 2] ["2" 2] ["2" 1] ["2" 0]]
+                                                   [["-1"] ["3" 1] ["3" 0] ["3" 1] ["4" 1] ["4" 2] ["2" 2] ["2" 1]]
+                                                   [["1" 1] ["-1"] ["3" 1] ["4" 1] ["4" 0] ["4" 1] ["4" 2] ["2" 2]]
+                                                   [["1" 0] ["1" 1] ["-1"] ["4" 2] ["4" 1] ["4" 2] ["4" 3] ["-1"]]
+                                                   [["1" 1] ["1" 2] ["-1"] ["4" 3] ["4" 2] ["4" 3] ["5" 3] ["5" 2]]
+                                                   [["1" 2] ["1" 3] ["-1"] ["4" 4] ["4" 3] ["5" 3] ["5" 2] ["5" 1]]
+                                                   [["1" 3] ["1" 4] ["-1"] ["5" 4] ["5" 3] ["5" 2] ["5" 1] ["5" 0]]])))}
+  [coords strategy]
   (let [[min-x min-y max-x max-y] (bounding-box coords)
         empty-space (vec (repeat max-y (vec (repeat max-x 0))))]
     (->> empty-space
          (map-indexed (fn [row-idx row-val]
                         (->> row-val
                              (map-indexed (fn [col-idx _]
-                                            (closest coords [col-idx row-idx])))
+                                            (strategy coords [col-idx row-idx])))
                              (drop min-x)
                              (vec))))
          (drop min-y)
          (vec))))
 
 (defn top
-  {:test (fn [] (is (= (top (init-space test-input)) #{"0" "2"})))}
+  {:test (fn [] (is (= (top (init-space test-input closest)) #{"0" "2"})))}
   [coords]
   (difference (set (map first (first coords))) #{"-1"}))
 
 (defn bottom
-  {:test (fn [] (is (= (bottom (init-space test-input)) #{"1" "5"})))}
+  {:test (fn [] (is (= (bottom (init-space test-input closest)) #{"1" "5"})))}
   [coords]
   (difference (set (map first (last coords))) #{"-1"}))
 
 (defn left
-  {:test (fn [] (is (= (left (init-space test-input)) #{"0" "1"})))}
+  {:test (fn [] (is (= (left (init-space test-input closest)) #{"0" "1"})))}
   [coords]
   (difference (set (map (fn [row]
                           (first (first row))) coords)) #{"-1"}))
 (defn right
-  {:test (fn [] (is (= (right (init-space test-input)) #{"2" "5"})))}
+  {:test (fn [] (is (= (right (init-space test-input closest)) #{"2" "5"})))}
   [coords]
   (difference (set (map (fn [row]
                           (first (last row))) coords)) #{"-1"}))
 
 (defn area
   {:test (fn []
-           (is (= (area (init-space test-input) "4") 17)))}
+           (is (= (area (init-space test-input closest) "4") 17)))}
   [inited-space id]
   (->> inited-space
        (reduce (fn [current-area row]
                  (+ current-area
-                    (or (get (frequencies (map first row)) id) 0))) 0)))
+                    (or (get (frequencies (map first row)) id)
+                        0))) 0)))
 
 (defn biggest-non-infinite-area
   {:test (fn []
            (is (= (biggest-non-infinite-area test-input) 17))
-           (is (= (biggest-non-infinite-area input) 4186))
-           )}
+           (comment (is (= (biggest-non-infinite-area input) 4186))))} ; part 1
   [coords]
-  (let [space (init-space coords)
+  (let [space (init-space coords closest)
         all-point-ids (keys coords)
         bordering-ids (union (top coords) (left coords) (bottom coords) (right coords))
         inner-ids (difference all-point-ids bordering-ids)]
@@ -116,3 +125,13 @@
          (pmap #(area space %))
          (apply max))))
 
+(defn safe-region-size
+  {:test (fn []
+           (is (= (safe-region-size test-input 32) 16))
+           (is (= (safe-region-size input 10000) 45509)))}  ; part 2
+  [coords threshold]
+  (reduce (fn [region-size row]
+            (+ region-size
+               (count (filter #(> threshold %) row))))
+          0
+          (init-space coords distance-to-others)))
