@@ -44,3 +44,9 @@
            (is (regex-to-int "[1518-11-01 00:05] falls asleep"  #"\d{2}:(.*)\]") 5))}
   [str pat]
   (Integer/parseInt (last (re-find pat str))))
+
+(defn regex-to-str
+  {:test (fn []
+           (is (regex-to-str "[1518-11-01 00:05] falls asleep"  #"\d{2}:(.*)\]") "05"))}
+  [str pat]
+  (last (re-find pat str)))
